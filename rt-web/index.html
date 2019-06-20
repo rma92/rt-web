@@ -1,0 +1,129 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Thermostat!</title>
+</head>
+<body onload="update()">
+<table border=2>
+<tr>
+<td colspan=2>
+<div id=cur>
+<input type="number" id="temp" readonly value=0/>&deg;F 
+<input type="number" id="humidity" readonly value=0/>%
+</div>
+<div>
+Mode:<br/>
+<input type="radio" name="tmode" id="tmode0" value=0>Off<br/>
+<input type="radio" name="tmode" id="tmode1" value=1>Heat<br/>
+<input type="radio" name="tmode" id="tmode2" value=2>Cool<br/>
+<input type="radio" name="tmode" id="tmode3" value=3>Auto<br/>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<h2>Cool</h2>
+<input type="number" id="t_cool" step="0.5" /><br/>
+<button id="setcool" onclick=setcool()>Set</button>
+</td>
+<td>
+<h2>Heat</h2>
+<input type="number" id="t_heat" step="0.5"/>
+</td>
+</tr>
+</body>
+<script>
+function g( url )
+{
+  var req = new XMLHttpRequest();
+  req.open( 'GET', url, false );
+  req.send( null );
+
+  if( req.status == 200 )
+  {
+    return req.responseText;
+  }
+  else
+  {
+    return req.status;
+  }
+}
+//this isn't used right now.
+function p( postdata, url )
+{
+  var req = new XMLHttpRequest();
+  req.open( 'POST', url, false );
+  req.send( postdata );
+
+  if( req.status == 200 )
+  {
+    return req.responseText;
+  }
+  else
+  {
+    return req.status;
+  }
+}
+
+function update_display_runner()
+{
+  //get the info
+  var res = g( '/api' );
+  var rj = JSON.parse(res);
+  document.getElementById('temp').value = rj['temp'];
+  document.getElementById('tmode' + rj['tmode'] ).checked = true;
+  if( document.getElementById('t_cool').style.backgroundColor != 'yellow' )
+  {
+    document.getElementById('t_cool').value = rj['t_cool'];
+    document.getElementById('t_cool').style.backgroundColor = '#fff';
+  }
+  document.getElementById('t_heat').value = rj['t_heat'];
+}
+function update_humidity()
+{
+  var res = g( '/api/humidity' );
+  var rj = JSON.parse(res);
+  document.getElementById('humidity').value = rj['humidity'];
+}
+function update()
+{
+  document.getElementById('t_cool').addEventListener('change', (event)=>
+  {
+    event.target.style.backgroundColor = "yellow";
+  });
+  document.getElementById('t_cool').addEventListener('change', (event)=>
+  {
+    event.target.style.backgroundColor = "yellow";
+  });
+  update_display_runner();
+}
+function setcool()
+{
+  var r1= g( '/api/?t_cool=' + document.getElementById('t_cool').value );
+  var r1o = JSON.parse(r1);
+  console.log(r1);
+  if( r1o.success == 0 )
+  {
+    document.getElementById('t_cool').style.backgroundColor = "#fff";
+  }
+
+}
+</script>
+<style>
+#cur
+{
+  font-size: 38px;
+}
+#temp, #humidity, #t_cool, #t_heat
+{
+  font-size: 40px;
+  width: 120px;
+  background-color: #eee;
+  color: #000;
+}
+#setcool
+{
+  font-size: 32px;
+}
+</style>
+</html>
